@@ -84,6 +84,7 @@ export function createMotionStudio(api) {
       <label data-transition-label>到下一帧 <input type="number" data-motion-setting="transition" aria-label="选中帧到下一帧的过渡秒数" min="0.1" max="5" step="0.1"> 秒</label>
       </div>
       <div class="travel-editor" data-travel-editor></div>
+      <div class="motion-camera"><span data-motion-camera></span><button class="btn tiny" data-motion="view">沿用本帧镜头</button></div>
       </div>
     </div>
     <div class="motion-controls">
@@ -173,6 +174,10 @@ export function createMotionStudio(api) {
     const frame = project.frames[index];
     const timing = frameTiming(frame, project.settings);
     const poseSelected = Boolean(frame && frame.kind !== 'video');
+    buttons('view').disabled = busy || !poseSelected || !frame.view;
+    host.querySelector('[data-motion-camera]').textContent = poseSelected && frame.view
+      ? `已存机位 · ${frame.view.focalLength ? `${Number(frame.view.focalLength.toFixed(1))} mm` : `旧版视角 ${frame.view.fov}°`} · 画幅自动记录。沿用镜头不会覆盖当前角色。`
+      : poseSelected ? '旧定格没有镜头数据，可替换定格补齐。' : '定格可记录机位、焦距与画幅。';
     host.querySelector('[data-motion-setting-scope]').textContent = poseSelected ? `第 ${index + 1} 段定格 · 仅本帧` : frame ? '视频使用录制原时长' : '请先选择定格';
     for (const input of host.querySelectorAll('[data-motion-setting]')) {
       input.value = String(timing[input.dataset.motionSetting]);
@@ -433,6 +438,14 @@ export function createMotionStudio(api) {
       return;
     }
     if (editingSnapshot) return;
+    if (action === 'view') {
+      const frame = project.frames.find((item) => item.id === selected);
+      if (frame?.kind === 'pose' && frame.view) {
+        api.applyView(frame.view);
+        api.toast('已沿用本帧镜头，当前角色保持原样');
+      }
+      return;
+    }
     if (action === 'add') return addFrame();
     if (action === 'replace') return addFrame(true);
     if (action === 'undo' && frameHistory.length) {

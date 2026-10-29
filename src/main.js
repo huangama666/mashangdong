@@ -19,7 +19,7 @@ import { mountIcons } from './icons.js';
 import { createMotionStudio } from './motionStudio.js';
 import { PROP_TYPES, createPropFigure, normalizeProp, resizeProp } from './propModel.js';
 import { captureLocomotionRig, applyTravelPose, restoreSampleJoints } from './locomotion.js';
-import { withCaptureProjection, normalizeMotionView } from './motionMedia.js';
+import { withCaptureProjection, normalizeMotionView, normalizeCaptureFrame, captureCameraView, restoreCameraView } from './motionMedia.js';
 import './style.css';
 import './workbench.css';
 
@@ -30,6 +30,7 @@ const SCENE_KEY = 'poselab.scene.v4';
 const SETTINGS_KEY = 'poselab.settings.v1';
 const ONBOARD_KEY = 'poselab.onboarded.v1';
 const CUSTOM_POSES_KEY = 'poselab.customPoses.v3';
+const CAMERA_KEY = 'poselab.camera.v1';
 
 const FIGURE_TYPES = {
   male: { label: '男性', short: '男', body: '男性体型', icon: 'male', sub: '蓝色运动装', size: 1 },
@@ -80,6 +81,8 @@ scene.fog = new THREE.Fog(currentTheme.bg, 8.5, 30);
 
 const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.05, 120);
 camera.position.set(2.25, 1.52, 3.35);
+camera.filmGauge = 36;
+const captureFrame = normalizeCaptureFrame();
 
 const controls = new OrbitControls(camera, canvas);
 controls.target.set(0, 0.94, 0);
@@ -89,7 +92,7 @@ controls.rotateSpeed = 0.72;
 controls.panSpeed = 0.72;
 controls.zoomSpeed = 0.75;
 controls.minDistance = 1.0;
-controls.maxDistance = 14;
+controls.maxDistance = 100;
 controls.maxPolarAngle = Math.PI / 2 - 0.018;
 controls.minPolarAngle = 0.02;
 controls.screenSpacePanning = true;
@@ -371,6 +374,7 @@ function loadCustomPoses() {
         id: String(p.id || makeId()),
         name: p.name.trim().slice(0, 20) || '未命名动作',
         createdAt: Number(p.createdAt) || Date.now(),
+        view: normalizeMotionView(p.view),
       };
       if (Array.isArray(p.figures) && p.figures.length) {
         const figures = p.figures.filter(
@@ -862,6 +866,7 @@ function applyCustomPose(fig, entry) {
   fig.joints.hips.position.y =
     fig.joints.hips.userData.baseY + (Number(entry.hipsOffset) || 0) / fig.modelScale;
   fig.root.updateMatrixWorld(true);
+  if (entry.view) applyStoredView(entry.view, true);
   scheduleAutosave();
   renderPanel();
   return true;
@@ -875,7 +880,8 @@ function applyGroupPose(entry) {
     selectedIndex: entry.selectedIndex || 0,
     figures: entry.figures,
   });
-  frameAll();
+  if (entry.view) applyStoredView(entry.view, true);
+  else frameAll();
 }
 
 // ---------------- history ----------------
@@ -1703,6 +1709,31 @@ window.addEventListener('pointerup', () => {
 });
 
 // ---------------- camera ----------------
+function currentCameraView() {
+  return captureCameraView(camera, controls.target, captureFrame);
+}
+
+function persistCameraView() {
+  writeStore(CAMERA_KEY, currentCameraView());
+}
+
+function applyStoredView(raw, persist = false) {
+  if (!normalizeMotionView(raw)) return;
+  camTween = null;
+  // Flush OrbitControls damping before installing the exact saved pose.
+  const damping = controls.enableDamping;
+  controls.enableDamping = false;
+  controls.update();
+  controls.enableDamping = damping;
+  restoreCameraView(camera, controls.target, raw);
+  if (!motionStudio?.isPreviewing) fitProjection();
+  if (persist) persistCameraView();
+}
+
+controls.addEventListener('end', () => {
+  if (!motionStudio?.isPreviewing) persistCameraView();
+});
+
 function flyTo(pos, target, duration = 520) {
   camTween = {
     p0: camera.position.clone(),
@@ -1739,7 +1770,7 @@ function sceneFit() {
   const freeAspect = freeW / window.innerHeight;
   const distV = size.y / (2 * Math.tan(vfov / 2)) * window.innerHeight / freeH;
   const distH = size.x / (2 * Math.tan(vfov / 2) * freeAspect);
-  const distance = clamp(Math.max(distV, distH) * 1.22 + 0.35, 2.9, 12);
+  const distance = clamp(Math.max(distV, distH) * 1.22 + 0.35, 2.9, 90);
   center.y = clamp(center.y, 0.55, 1.35);
   return { center, distance };
 }
@@ -1888,7 +1919,7 @@ function customPoseListHtml() {
             <span class="cp-name">${escapeHtml(p.name)}</span>
             ${group ? '<span class="cp-badge">组合</span>' : ''}
           </span>
-          <span class="cp-meta">${meta}</span>
+          <span class="cp-meta">${meta}${p.view ? ' · 含镜头' : ''}</span>
         </button>
         <button class="cp-del" data-delete-pose="${p.id}" title="删除这个动作" aria-label="删除 ${escapeHtml(p.name)}">
           <span data-icon="trash"></span>
@@ -1951,10 +1982,15 @@ function openPosesPopover(anchor) {
 }
 
 function openViewPopover(anchor) {
-  openPopover(
+  const el = openPopover(
     'view',
     anchor,
-    `${popoverHead('视角', '只改变观察角度，不影响姿势')}
+    `${popoverHead('视角与镜头', '定格可同时保存机位、焦距与画幅')}
+     <div class="camera-fields">
+       <label>焦距（mm）<input type="number" data-camera-focal aria-label="镜头焦距毫米" min="10" max="200" step="1" value="${Number(currentCameraView().focalLength.toFixed(2))}"></label>
+     </div>
+     <p class="camera-readout">机位 ${camera.position.toArray().map((v) => v.toFixed(2)).join(' / ')}<br>观察点 ${controls.target.toArray().map((v) => v.toFixed(2)).join(' / ')}</p>
+     <p class="camera-note">焦距按 36 mm 片幅基准计算。画幅沿用原有设置，定格时自动记录。</p>
      <div class="view-grid">
        <button class="btn" data-view="front">正面</button>
        <button class="btn" data-view="back">背面</button>
@@ -1966,8 +2002,20 @@ function openViewPopover(anchor) {
      <div class="btn-row" style="margin-top:8px">
        <button class="btn" data-action="frame-all" style="width:100%">框选全部角色</button>
      </div>`,
-    252,
+    300,
   );
+  if (!el) return;
+  const focal = el.querySelector('[data-camera-focal]');
+  const updateFocal = () => {
+    const value = Number(focal.value);
+    if (!Number.isFinite(value) || value < 10 || value > 200) return;
+    withCaptureProjection(camera, captureFrame.width / captureFrame.height, () => camera.setFocalLength(value));
+    fitProjection();
+    persistCameraView();
+  };
+  focal.addEventListener('input', updateFocal);
+  focal.addEventListener('change', () => { updateFocal(); focal.value = Number(currentCameraView().focalLength.toFixed(2)); });
+
 }
 
 function settingsBody() {
@@ -2190,6 +2238,7 @@ function openHelp() {
       <div class="shortcut"><span>爬行动物</span><span>以蜥蜴为代表模型，可调整四肢、颈部和分段尾巴。</span></div>
       <div class="shortcut"><span>飞行动物</span><span>以鸟为代表模型，可调整翅根、翼尖、尾羽及腿脚。</span></div>
       <div class="shortcut"><span>保存姿势</span><span>侧栏或姿势库里的「保存当前姿势」，存在本机</span></div>
+      <div class="shortcut"><span>保存镜头</span><span>「视角」可设焦距；画幅自动记录，动作库可勾选同时保存。补镜头时点「沿用本帧镜头」，仅恢复机位。</span></div>
       <div class="shortcut"><span>精修角度</span><span>选中关节后用右侧 X / Y / Z 滑块</span></div>
       <div class="shortcut"><span>角色同框</span><span>左上角「添加角色」，可分别选中摆姿</span></div>
       <h3>快捷键</h3>
@@ -2262,6 +2311,8 @@ function openSavePoseModal(options = {}) {
       <p class="save-hint" data-save-hint>${hints[scope]}</p>
       <label class="field-label" for="pose-name">动作名称</label>
       <input class="text-input" id="pose-name" maxlength="20" placeholder="例如：倚墙站姿 / 三人合影" autocomplete="off">
+      <label class="save-camera-option"><input type="checkbox" data-save-camera checked>同时保存镜头（机位、焦距与画幅）</label>
+      <p class="camera-note">应用时恢复该镜头。要连站位一起复现，请选择「场景组合」。</p>
       <div class="btn-row" style="justify-content:flex-end; margin-top:16px">
         <button class="btn" data-cancel>取消</button>
         <button class="btn primary" data-confirm><span data-icon="bookmark"></span>保存</button>
@@ -2306,6 +2357,7 @@ function openSavePoseModal(options = {}) {
             createdAt: Date.now(),
           }
         : { id: makeId(), name, kind: 'single', ...currentPoseData(fig), createdAt: Date.now() };
+    if (modalRoot.querySelector('[data-save-camera]').checked) entry.view = currentCameraView();
     addCustomPose(entry);
     closeModal();
     toast(
@@ -2544,7 +2596,7 @@ function animate(now) {
     const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
     camera.position.lerpVectors(camTween.p0, camTween.p1, e);
     controls.target.lerpVectors(camTween.t0, camTween.t1, e);
-    if (k >= 1) camTween = null;
+    if (k >= 1) { camTween = null; persistCameraView(); }
   }
   if (!motionStudio?.isPreviewing) controls.update();
   updateSelectionMarker();
@@ -2652,24 +2704,15 @@ async function init() {
   }
 
   if (!state.selectedId && state.figures.length) state.selectedId = state.figures[0].id;
+  const savedCamera = normalizeMotionView(readStore(CAMERA_KEY));
+  if (savedCamera) applyStoredView(savedCamera);
   updateModeUI();
   renderPanel();
   motionStudio = createMotionStudio({
     captureScene: serializeScene,
-    captureView: () => ({ position: camera.position.toArray(), target: controls.target.toArray(), fov: camera.fov }),
+    captureView: currentCameraView,
     applyView(raw) {
-      const view = normalizeMotionView(raw);
-      if (!view) return;
-      camTween = null;
-      const damping = controls.enableDamping;
-      controls.enableDamping = false;
-      controls.update();
-      controls.enableDamping = damping;
-      camera.position.fromArray(view.position);
-      camera.fov = view.fov;
-      controls.target.fromArray(view.target);
-      camera.lookAt(controls.target);
-      camera.updateProjectionMatrix();
+      applyStoredView(raw, !motionStudio?.isPreviewing);
     },
     applyScene: applyMotionScene,
     loadFrame(data) {
@@ -2691,6 +2734,7 @@ async function init() {
       controls.enabled = true;
       document.querySelectorAll('#panel, .topbar, .stage-tools, .bottom-left, .mode-wrap').forEach((element) => { element.inert = false; });
       document.body.classList.remove('motion-preview');
+      fitProjection();
       renderPanel();
       updateHistoryButtons();
       scheduleAutosave();
@@ -2734,6 +2778,7 @@ window.__poselab = {
       name: name || `测试姿势 ${customPoses.length + 1}`,
       kind: 'single',
       ...currentPoseData(fig),
+      view: currentCameraView(),
       createdAt: Date.now(),
     };
     addCustomPose(entry);
@@ -2745,6 +2790,7 @@ window.__poselab = {
       id: makeId(),
       name: name || `测试组合 ${customPoses.length + 1}`,
       kind: 'group',
+      view: currentCameraView(),
       figures: state.figures.map(figureToData),
       selectedIndex: Math.max(0, state.figures.findIndex((f) => f.id === state.selectedId)),
       createdAt: Date.now(),

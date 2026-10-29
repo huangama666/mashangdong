@@ -162,3 +162,13 @@ test('定格保留捕获时的镜头，刷新和预览不能改为当前编辑�
   assert.deepEqual(motion.sampleTimeline(restored.frames, 0.2).view, captured[0].view);
   motion.sampleTimeline(restored.frames, 1).view.position.forEach((value, i) => assert.ok(Math.abs(value - [1, 1, 4][i]) < 1e-8));
 });
+
+test('定格项目刷新及整轨采样保留各帧独立的焦距与画幅', () => {
+  const captured = structuredClone(frames);
+  captured[0].view = { position: [0, 1, 4], target: [0, 1, 0], fov: 34, focalLength: 50, filmGauge: 36, zoom: 1, frame: { width: 720, height: 1280 } };
+  const restored = motion.restoreTimeline(JSON.parse(JSON.stringify({ frames: captured })));
+  const view = restored.frames[0].view;
+  assert.equal(view.focalLength, 50);
+  assert.deepEqual(view.frame, { width: 720, height: 1280 });
+  assert.deepEqual(motion.sampleTimeline(restored.frames, 0.1).view, view);
+});

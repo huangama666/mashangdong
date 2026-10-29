@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { PerspectiveCamera } from 'three';
+import { PerspectiveCamera, Vector3 } from 'three';
 
 const file = new URL('../src/motionMedia.js', import.meta.url);
 const media = existsSync(file) ? await import(file) : {};
@@ -72,4 +72,89 @@ test('正反面镜头衔接围绕目标点移动，不穿过人物或依赖上�
     assert.ok(media.normalizeMotionView(view));
     assert.ok(Math.abs(Math.hypot(...view.position.map((n, i) => n - view.target[i])) - 4) < 1e-8);
   }
+});
+
+test('镜头快照同时保存机位、观察点、物理焦距与画幅，JSON 往返不丢参数', () => {
+  assert.equal(typeof media.captureCameraView, 'function');
+  const camera = new PerspectiveCamera(34, 9 / 16, 0.05, 120);
+  camera.filmGauge = 36;
+  camera.setFocalLength(50);
+  camera.zoom = 1.25;
+  camera.position.set(2, 1.6, 4);
+  const view = media.captureCameraView(camera, new Vector3(0, 0.9, 0), { width: 720, height: 1280 });
+  assert.deepEqual(view.position, [2, 1.6, 4]);
+  assert.deepEqual(view.target, [0, 0.9, 0]);
+  assert.ok(Math.abs(view.focalLength - 50) < 1e-10);
+  assert.equal(view.filmGauge, 36);
+  assert.equal(view.zoom, 1.25);
+  assert.deepEqual(view.frame, { width: 720, height: 1280 });
+  assert.deepEqual(media.normalizeMotionView(JSON.parse(JSON.stringify(view))), view);
+});
+
+test('重新载入镜头后透视投影一致，旧定格仍按原 FOV 恢复为 16:9', () => {
+  assert.equal(typeof media.restoreCameraView, 'function');
+  const original = new PerspectiveCamera(34, 9 / 16, 0.05, 120);
+  original.filmGauge = 36;
+  original.setFocalLength(85);
+  original.position.set(2, 1.6, 4);
+  const target = new Vector3(0, 0.9, 0);
+  original.lookAt(target);
+  original.updateMatrixWorld();
+  const view = media.captureCameraView(original, target, { width: 720, height: 1280 });
+  const restored = new PerspectiveCamera(90, 2.4, 0.05, 120);
+  restored.setViewOffset(1900, 800, 100, 50, 1900, 800);
+  const restoredTarget = new Vector3();
+  media.restoreCameraView(restored, restoredTarget, JSON.parse(JSON.stringify(view)));
+  restored.updateMatrixWorld();
+  const point = new Vector3(0.3, 1.1, 0.2);
+  assert.ok(point.clone().project(original).distanceTo(point.clone().project(restored)) < 1e-10);
+  assert.deepEqual(restoredTarget.toArray(), target.toArray());
+  media.restoreCameraView(restored, restoredTarget, { position: [0, 1, 4], target: [0, 1, 0], fov: 34 });
+  assert.equal(restored.fov, 34);
+  assert.equal(restored.aspect, 16 / 9);
+  assert.equal(restored.zoom, 1);
+});
+
+test('自动记录原有固定画幅，编辑窗口的比例不会改变保存的视角与焦距', () => {
+  const camera = new PerspectiveCamera(34, 1900 / 800, 0.05, 120);
+  camera.filmGauge = 36;
+  camera.position.set(0, 1, 4);
+  const target = new Vector3(0, 1, 0);
+  const a = media.captureCameraView(camera, target);
+  camera.aspect = 800 / 900;
+  const b = media.captureCameraView(camera, target);
+  assert.deepEqual(a.frame, { width: 1280, height: 720 });
+  assert.deepEqual(b.frame, a.frame);
+  assert.ok(Math.abs(a.fov - 34) < 1e-10);
+  assert.ok(Math.abs(b.fov - 34) < 1e-10);
+  assert.ok(Math.abs(a.focalLength - b.focalLength) < 1e-10);
+});
+
+test('损坏的画幅和镜头扩展参数安全降级，合法的长焦仍能保存', () => {
+  assert.equal(typeof media.normalizeCaptureFrame, 'function');
+  assert.deepEqual(media.normalizeCaptureFrame({ width: NaN, height: 0 }), { width: 1280, height: 720 });
+  assert.deepEqual(media.normalizeCaptureFrame({ width: 1e9, height: 720 }), { width: 1280, height: 720 });
+  const camera = new PerspectiveCamera(34, 16 / 9, 0.05, 120);
+  camera.filmGauge = 36;
+  camera.setFocalLength(200);
+  camera.position.set(0, 1, 4);
+  const view = media.captureCameraView(camera, new Vector3(), { width: 1280, height: 720 });
+  view.position = [0, 1, 4];
+  assert.ok(media.normalizeMotionView(view));
+  assert.ok(view.fov < 10);
+  const bad = media.normalizeMotionView({ ...view, focalLength: Infinity, zoom: -1, filmGauge: NaN });
+  assert.ok(bad && Number.isFinite(bad.fov));
+  assert.notEqual(bad.zoom, -1);
+  assert.notEqual(bad.focalLength, Infinity);
+});
+
+test('镜头过渡保留物理参数，画幅在下一定格切换且不修改存档', () => {
+  const a = { position: [0, 1, 4], target: [0, 1, 0], fov: 34, focalLength: 35, filmGauge: 36, zoom: 1, frame: { width: 1280, height: 720 } };
+  const b = { ...a, focalLength: 85, frame: { width: 720, height: 1280 } };
+  const before = JSON.stringify([a, b]);
+  const middle = media.interpolateMotionView(a, b, 0.5);
+  assert.equal(middle.focalLength, 60);
+  assert.deepEqual(middle.frame, a.frame);
+  assert.deepEqual(media.interpolateMotionView(a, b, 1).frame, b.frame);
+  assert.equal(JSON.stringify([a, b]), before);
 });
