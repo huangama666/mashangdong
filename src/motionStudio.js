@@ -1,3 +1,9 @@
+/*!
+ * 码上动 · 三维动作创作工作台
+ * 项目开发与维护署名：黄啊码
+ * @author 黄啊码
+ * https://github.com/huangama666/mashangdong
+ */
 import { MAX_KEYFRAMES, MAX_FRAME_FIGURES, isRecordableScene, restoreTimeline, normalizeTiming, frameTiming, sampleTimeline, timelineDuration, frameStartTime } from './timeline.js';
 import { createClipStore } from './clipStore.js';
 import { normalizeTravel, travelCandidates } from './locomotion.js';

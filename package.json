@@ -2,6 +2,7 @@
   "name": "mashangdong",
   "private": true,
   "version": "1.0.0",
+  "author": "黄啊码",
   "type": "module",
   "repository": {
     "type": "git",

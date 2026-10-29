@@ -1,3 +1,9 @@
+/*!
+ * 码上动 · 三维动作创作工作台
+ * 项目开发与维护署名：黄啊码
+ * @author 黄啊码
+ * https://github.com/huangama666/mashangdong
+ */
 const wrap = (body) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
 

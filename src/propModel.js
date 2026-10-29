@@ -1,3 +1,9 @@
+/*!
+ * 码上动 · 三维动作创作工作台
+ * 项目开发与维护署名：黄啊码
+ * @author 黄啊码
+ * https://github.com/huangama666/mashangdong
+ */
 import * as THREE from 'three';
 
 export const PROP_TYPES = {
