@@ -146,3 +146,15 @@ npm run build
 | `src/style.css`、`src/workbench.css` | 界面样式与响应式布局 |
 | `public/models/` | 人物模型资源 |
 | `tests/` | 自动测试 |
+
+## 联系作者与交流
+
+更多详情可添加作者微信，或加入沟通交流群，一起交流使用心得、创作案例与功能建议。
+
+<table>
+  <tr><th width="50%">作者个人微信 · 黄啊码</th><th width="50%">沟通交流群 · 黄啊码 AI 交流群 ③</th></tr>
+  <tr>
+    <td align="center" valign="top"><a href="docs/contact/author-wechat-qr.png"><img src="docs/contact/author-wechat-qr.png" alt="作者黄啊码的个人微信二维码" width="240"></a></td>
+    <td align="center" valign="top"><a href="docs/contact/community-wechat-qr.png"><img src="docs/contact/community-wechat-qr.png" alt="黄啊码 AI 交流群 ③ 的群二维码" width="240"></a></td>
+  </tr>
+</table>
