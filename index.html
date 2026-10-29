@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#18232c" />
+    <title>码上动 · 三维动作创作工作台</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="view"></canvas>
+      <div class="stage-vignette"></div>
+
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" data-icon="logo"></span>
+          <span class="brand-name">码上动</span>
+          <span class="brand-tag">三维动作创作工作台</span>
+        </div>
+        <div class="toolbar" id="toolbar">
+          <button class="tool" data-tool="figures" data-tip="添加角色" aria-label="添加角色">
+            <span data-icon="addUser"></span><span class="tool-label">添加角色</span>
+          </button>
+          <button class="tool prop-tool" data-tool="props" data-tip="添加物品" aria-label="添加物品">
+            <span data-icon="cube"></span><span class="tool-label">添加物品</span>
+          </button>
+          <button class="tool" data-tool="poses" data-tip="姿势库" aria-label="姿势库">
+            <span data-icon="poses"></span><span class="tool-label">姿势库</span>
+          </button>
+          <button class="tool" data-tool="view" data-tip="视角" aria-label="视角">
+            <span data-icon="view"></span><span class="tool-label">视角</span>
+          </button>
+          <span class="tool-sep" aria-hidden="true"></span>
+          <button class="tool" id="export" data-tip="导出 PNG" aria-label="导出 PNG">
+            <span data-icon="camera"></span><span class="tool-label">导出图片</span>
+          </button>
+          <button class="tool motion-tool" id="motion-toggle" data-tip="定格动画与录制" aria-label="定格动画与录制">
+            <span data-icon="film"></span><span class="tool-label">定格 / 录制</span>
+          </button>
+        </div>
+        <div class="top-actions">
+          <button class="tool inspector-toggle" id="inspector-toggle" aria-label="切换属性面板" aria-controls="panel" aria-expanded="true"><span data-icon="inspector"></span><span class="tool-label">属性</span></button>
+          <button class="tool small" data-tool="help" data-tip="操作说明">
+            <span data-icon="help"></span>
+          </button>
+          <button class="tool small" data-tool="settings" data-tip="场景设置">
+            <span data-icon="settings"></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="stage-tools" aria-label="场景取景"><span>场景视图</span><button id="frame-scene" aria-label="适配全部对象"><span data-icon="view"></span>适配画面</button></div>
+
+      <aside id="panel" class="panel" aria-label="场景对象属性"></aside>
+      <section id="motion-studio" class="motion-studio" aria-label="定格动画工作台" hidden></section>
+
+      <div class="bottom-left">
+        <button id="undo" class="tool small" data-tip="撤销 Ctrl+Z" disabled>
+          <span data-icon="undo"></span>
+        </button>
+        <button id="redo" class="tool small" data-tip="重做 Ctrl+Shift+Z" disabled>
+          <span data-icon="redo"></span>
+        </button>
+      </div>
+
+      <div class="mode-wrap">
+        <div class="mode-switch" id="mode-switch">
+          <button data-mode="ik" class="active" title="拖动手脚自动弯曲四肢，拖其他部位旋转关节">IK 拖拽</button>
+          <button data-mode="fk" title="所有关节都用 FK 旋转">FK 关节</button>
+        </div>
+        <div class="mode-switch gizmo-switch" id="gizmo-switch">
+          <button data-gizmo="rotate" class="active" title="彩色圆环旋转关节（E）">旋转</button>
+          <button data-gizmo="move" title="XYZ 箭头平移整个人物（W）">平移</button>
+          <button data-gizmo="scale" title="拖动彩色轴调整物品尺寸" hidden>尺寸</button>
+        </div>
+      </div>
+
+      <div class="camera-hint">左键旋转 · 右键平移 · 滚轮缩放</div>
+
+      <div id="popover-root"></div>
+      <div id="modal-root"></div>
+      <div id="tooltip" class="hover-tip"></div>
+      <div id="toast" class="toast">
+        <span data-icon="check"></span><span class="toast-text"></span>
+      </div>
+
+      <div id="onboarding" class="onboarding hidden">
+        <div class="onboarding-head">
+          <span class="onboarding-kicker">快速上手</span>
+          <button class="icon-plain" id="onboarding-close" aria-label="关闭">
+            <span data-icon="close"></span>
+          </button>
+        </div>
+        <h2>三步摆出参考姿势</h2>
+        <ul>
+          <li><b>拖动空白处</b>旋转视角，滚轮缩放。</li>
+          <li><b>拖动手 / 脚</b>，四肢自动弯曲（IK）。</li>
+          <li><b>拖动任意关节</b>，或切到 FK 精确调整。</li>
+        </ul>
+        <button class="btn primary" id="onboarding-ok">开始</button>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

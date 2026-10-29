@@ -1,0 +1,23 @@
+{
+  "name": "mashangdong",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huangama666/mashangdong.git"
+  },
+  "homepage": "https://github.com/huangama666/mashangdong#readme",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.5"
+  }
+}
