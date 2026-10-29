@@ -4,6 +4,49 @@
 
 本项目仓库：[huangama666/mashangdong](https://github.com/huangama666/mashangdong)。
 
+## 创作案例
+
+以下案例由用户提供，展示三维摆姿、场景编排和动作录制在创作流程中的应用。左侧为工作台中的参考，右侧为外部制作的效果示例；码上动本身不内置图像或视频生成功能。
+
+### 图片案例
+
+#### 1. 多人互动与情节构图
+
+通过三位角色的位置、朝向和手臂姿势，安排人物之间的互动关系，为剧情画面提供构图参考。
+
+| 三维姿势参考 | 效果示例 |
+| --- | --- |
+| ![三位角色的互动姿势与站位](docs/examples/character-interaction-reference.png) | ![咖啡馆外三人互动的效果示例](docs/examples/character-interaction-result.png) |
+
+#### 2. 人物、动物与物品的场景编排
+
+将人物、爬行动物、飞行动物与带名称的基础物品放进同一场景，用体块、标记与姿势表达座位、桌面及道具的位置关系。
+
+| 三维场景参考 | 效果示例 |
+| --- | --- |
+| ![人物、蜥蜴、鸟与标记物品的场景编排](docs/examples/scene-composition-reference.png) | ![包含人物、鸟、蜥蜴和桌面道具的古风书房效果示例](docs/examples/scene-composition-result.png) |
+
+#### 3. 舞蹈姿势与动作参考
+
+调整手臂、躯干和腿部关节，保存单腿抬起、双手举起的姿势，为舞台人物创作提供动作参考。
+
+| 三维姿势参考 | 效果示例 |
+| --- | --- |
+| ![双手举起并单腿抬起的三维舞蹈姿势](docs/examples/dance-pose-reference.png) | ![采用相近舞蹈姿势的舞台人物效果示例](docs/examples/dance-pose-result.png) |
+
+### 视频案例
+
+#### 动作与运镜参考 → 动画效果
+
+左侧是在工作台中录制的人物、蜥蜴与鸟的动作参考；右侧为外部制作的城市追逐动画效果。此案例展示将参考视频的动作与镜头用于后续创作，并替换角色及场景的使用方式。
+
+点击封面进入对应视频文件页，可查看或下载原始 MP4。
+
+| 工作台动作参考 · 约 6 秒 | 动画效果示例 · 约 6 秒 |
+| --- | --- |
+| [![打开工作台动作参考视频](docs/examples/motion-reference-poster.jpg)](docs/examples/motion-reference.mp4) | [![打开城市追逐动画效果视频](docs/examples/motion-result-poster.jpg)](docs/examples/motion-result.mp4) |
+| [查看视频](docs/examples/motion-reference.mp4) · [下载 MP4](https://github.com/huangama666/mashangdong/raw/refs/heads/main/docs/examples/motion-reference.mp4) | [查看视频](docs/examples/motion-result.mp4) · [下载 MP4](https://github.com/huangama666/mashangdong/raw/refs/heads/main/docs/examples/motion-result.mp4) |
+
 ## 主要功能
 
 - **人物与动物**：男性、女性、小孩，以及爬行动物、飞行动物可同框编辑，提供关节选择、姿势预设、缩放、复制与保存。
@@ -91,7 +134,3 @@ npm run build
 | `src/style.css`、`src/workbench.css` | 界面样式与响应式布局 |
 | `public/models/` | 人物模型资源 |
 | `tests/` | 自动测试 |
-
-## 项目来源
-
-基于 SSSpo 项目开发

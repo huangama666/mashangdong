@@ -2191,7 +2191,6 @@ function openHelp() {
       <div class="shortcut"><span>重做</span><span><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>Z</kbd></span></div>
       <div class="shortcut"><span>取消选择</span><span><kbd>Esc</kbd></span></div>
       <div class="modal-foot">所有数据保存在本机浏览器里，不会上传。当前场景会自动保存。</div>
-      <div class="modal-foot">基于 SSSpo 项目开发。</div>
     </div>
   </div>`;
   mountIcons(modalRoot);
