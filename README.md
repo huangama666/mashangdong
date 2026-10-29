@@ -14,25 +14,37 @@
 
 通过三位角色的位置、朝向和手臂姿势，安排人物之间的互动关系，为剧情画面提供构图参考。
 
-| 三维姿势参考 | 效果示例 |
-| --- | --- |
-| ![三位角色的互动姿势与站位](docs/examples/character-interaction-reference.png) | ![咖啡馆外三人互动的效果示例](docs/examples/character-interaction-result.png) |
+<table>
+  <tr><th width="50%">三维姿势参考</th><th width="50%">效果示例</th></tr>
+  <tr>
+    <td valign="top"><a href="docs/examples/character-interaction-reference.png"><img src="docs/examples/character-interaction-reference.png" alt="三位角色的互动姿势与站位" width="400"></a></td>
+    <td valign="top"><a href="docs/examples/character-interaction-result.png"><img src="docs/examples/character-interaction-result.png" alt="咖啡馆外三人互动的效果示例" width="400"></a></td>
+  </tr>
+</table>
 
 #### 2. 人物、动物与物品的场景编排
 
 将人物、爬行动物、飞行动物与带名称的基础物品放进同一场景，用体块、标记与姿势表达座位、桌面及道具的位置关系。
 
-| 三维场景参考 | 效果示例 |
-| --- | --- |
-| ![人物、蜥蜴、鸟与标记物品的场景编排](docs/examples/scene-composition-reference.png) | ![包含人物、鸟、蜥蜴和桌面道具的古风书房效果示例](docs/examples/scene-composition-result.png) |
+<table>
+  <tr><th width="50%">三维场景参考</th><th width="50%">效果示例</th></tr>
+  <tr>
+    <td valign="top"><a href="docs/examples/scene-composition-reference.png"><img src="docs/examples/scene-composition-reference.png" alt="人物、蜥蜴、鸟与标记物品的场景编排" width="400"></a></td>
+    <td valign="top"><a href="docs/examples/scene-composition-result.png"><img src="docs/examples/scene-composition-result.png" alt="包含人物、鸟、蜥蜴和桌面道具的古风书房效果示例" width="400"></a></td>
+  </tr>
+</table>
 
 #### 3. 舞蹈姿势与动作参考
 
 调整手臂、躯干和腿部关节，保存单腿抬起、双手举起的姿势，为舞台人物创作提供动作参考。
 
-| 三维姿势参考 | 效果示例 |
-| --- | --- |
-| ![双手举起并单腿抬起的三维舞蹈姿势](docs/examples/dance-pose-reference.png) | ![采用相近舞蹈姿势的舞台人物效果示例](docs/examples/dance-pose-result.png) |
+<table>
+  <tr><th width="50%">三维姿势参考</th><th width="50%">效果示例</th></tr>
+  <tr>
+    <td valign="top"><a href="docs/examples/dance-pose-reference.png"><img src="docs/examples/dance-pose-reference.png" alt="双手举起并单腿抬起的三维舞蹈姿势" width="400"></a></td>
+    <td valign="top"><a href="docs/examples/dance-pose-result.png"><img src="docs/examples/dance-pose-result.png" alt="采用相近舞蹈姿势的舞台人物效果示例" width="400"></a></td>
+  </tr>
+</table>
 
 ### 视频案例
 
@@ -40,12 +52,12 @@
 
 左侧是在工作台中录制的人物、蜥蜴与鸟的动作参考；右侧为外部制作的城市追逐动画效果。此案例展示将参考视频的动作与镜头用于后续创作，并替换角色及场景的使用方式。
 
-点击封面进入对应视频文件页，可查看或下载原始 MP4。
+点击封面进入对应视频文件页，下载原始 MP4 后即可播放。
 
 | 工作台动作参考 · 约 6 秒 | 动画效果示例 · 约 6 秒 |
 | --- | --- |
 | [![打开工作台动作参考视频](docs/examples/motion-reference-poster.jpg)](docs/examples/motion-reference.mp4) | [![打开城市追逐动画效果视频](docs/examples/motion-result-poster.jpg)](docs/examples/motion-result.mp4) |
-| [查看视频](docs/examples/motion-reference.mp4) · [下载 MP4](https://github.com/huangama666/mashangdong/raw/refs/heads/main/docs/examples/motion-reference.mp4) | [查看视频](docs/examples/motion-result.mp4) · [下载 MP4](https://github.com/huangama666/mashangdong/raw/refs/heads/main/docs/examples/motion-result.mp4) |
+| [视频文件](docs/examples/motion-reference.mp4) · [下载 MP4](https://github.com/huangama666/mashangdong/raw/refs/heads/main/docs/examples/motion-reference.mp4) | [视频文件](docs/examples/motion-result.mp4) · [下载 MP4](https://github.com/huangama666/mashangdong/raw/refs/heads/main/docs/examples/motion-result.mp4) |
 
 ## 主要功能
 
